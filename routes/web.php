@@ -18,5 +18,7 @@ use Elastic\Elasticsearch\ClientBuilder;
 
 Route::get('/jac', [SearchController::class, 'index']);
 Route::get('/autocomplete/{query?}', [SearchController::class, 'autocomplete']);
-Route::get('/search/{query?}', [SearchController::class, 'search']);
+Route::get('/search/{query?}/{cp?}/{ps?}', [SearchController::class, 'search']);
 Route::post('/filter', [SearchController::class, 'filter']);
+Route::post('/save', [SearchController::class, 'propertyDocumentSave']);
+Route::post('/update', [SearchController::class, 'propertyDocumentUpdate']);

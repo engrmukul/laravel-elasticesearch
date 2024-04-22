@@ -78,6 +78,8 @@ class SearchController extends Controller
     public function search()
     {
         $query = trim(request()->get('query'));
+        $currentPage = trim(request()->get('cp'));
+        $pageSize = trim(request()->get('ps'));
 
         $result = $this->elasticsearch->search('rzy_properties', $query);
 
@@ -91,6 +93,8 @@ class SearchController extends Controller
     public function filter(Request $request)
     {
         $query = $request->input('query');
+        $currentPage = trim($request->input('cp'));
+        $pageSize = trim($request->input('ps'));
 
         $filters = [
             "bathroom" => trim($query->bathroom),
@@ -105,7 +109,7 @@ class SearchController extends Controller
             "unit_area" => trim($query->unit_area),
         ];
 
-        $result = $this->elasticsearch->filter('rzy_properties',  $filters);
+        $result = $this->elasticsearch->filter('rzy_properties',  $filters, $currentPage, $pageSize);
 
         if(!empty($result)){
             return response()->json($result);
@@ -114,6 +118,107 @@ class SearchController extends Controller
         }
     }
 
+    public function propertyDocumentSave()
+    {
+        $productData = [
+            "id" => 10, 
+            "address" => "Singapore", 
+           "property_address" => "Dhaka Bangladesh", 
+           "city" => "Dhaka", 
+           "category" => "Residential Pro", 
+           "description" => "", 
+           "document" => "[]", 
+           "fileds" => null, 
+           "images" => "[]", 
+           "cover_image_url" => "https://rzylivebucket.s3.ap-southeast-1.amazonaws.com/63a0021052c2d.jpg", 
+           "min_booking_amount" => null, 
+           "mobile_no" => "+8806587481245", 
+           "name" => "undefined", 
+           "price" => "1400", 
+           "price_unit" => "Month", 
+           "product_name" => "MRT Condo Master 7 Bedroom", 
+           "subcategory" => "Condo", 
+           "rental_type" => "Whole Unit", 
+           "unit_type" => "", 
+           "bedroom" => "", 
+           "bathroom" => "", 
+           "floor_size" => "", 
+           "build_year" => "2023", 
+           "floor_level" => "null", 
+           "furnishing" => "null", 
+           "rent_term" => "null", 
+           "property_estate" => " ", 
+           "permit_gender" => "", 
+           "keyword" => null, 
+           "adder_role" => null, 
+           "country" => "", 
+           "price_negotiable" => null, 
+           "state" => null, 
+           "postal_code" => "555321", 
+           "street_name" => null, 
+           "house_no" => null, 
+           "street_no" => null, 
+           "pax_number" => null, 
+           "parking_vehicle_num" => null, 
+           "property_city" => "D19 Hougang / Punggol / Sengkang", 
+           "facing" => "null", 
+           "listing_purpose" => null, 
+           "latitude" => "1.357065", 
+           "longitude" => "103.861910", 
+           "hdb" => " ", 
+           "mrt" => null, 
+           "property_emenity" => [
+              ], 
+           "property_facility" => [
+                 ], 
+           "room_facility" => [
+                    ], 
+           "available_from" => "2024-04-15", 
+           "upload_title" => null, 
+           "image_list" => "[]", 
+           "unit_number" => "2" 
+        ];
 
+        $result = $this->elasticsearch->propertyDocumentSave('rzy_properties', 10, $productData);
+
+        dd($result);
+
+        if(!empty($result)){
+            return response()->json($result);
+        }else{
+            return response()->json(['errors' => ['message' => ['Data not found.']]], 400);
+        }
+    }
+
+    public function propertyDocumentUpdate()
+    {
+        $productUpdateData = [
+           "price" => "1400",
+           "latitude" => "1.357065", 
+           "longitude" => "103.861910",
+           "unit_number" => "2" 
+        ];
+
+        $result = $this->elasticsearch->propertyDocumentSave('rzy_properties', 10, $productUpdateData);
+
+        dd($result);
+
+        if(!empty($result)){
+            return response()->json($result);
+        }else{
+            return response()->json(['errors' => ['message' => ['Data not found.']]], 400);
+        }
+    }
+
+    public function propertyDocumentDelete()
+    {
+        $result = $this->elasticsearch->propertyDocumentDelete('rzy_properties', 10);
+
+        if(!empty($result)){
+            return response()->json(['message'=> 'Document deleted successfully!']);
+        }else{
+            return response()->json(['errors' => 'Document not deleted'], 400);
+        }
+    }
 
 }

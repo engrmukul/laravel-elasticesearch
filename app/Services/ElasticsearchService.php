@@ -1,4 +1,4 @@
-    <?php
+<?php
 
     namespace App\Services;
 
@@ -50,9 +50,12 @@
             }
         }
 
-        public function search($index, $query)
+        public function search($index, $query, $currentPage, $pageSize)
         {
             try {
+                $from = ($currentPage - 1) * $pageSize; 
+                $size = $pageSize;
+
                 $params = [
                     'index' => $index,
                     'body' => [
@@ -62,7 +65,10 @@
                                 //'fields' => ['field1', 'field2'] // Specify the fields you want to search on
                             ]
                         ]
-                    ]
+                    ],
+
+                    'from' => $from,
+                    'size' => $size,
                 ];
 
                 $response = $this->client->search($params);
@@ -89,9 +95,11 @@
                                 'filter' => $filters
                             ]
                         ]
-                    ]
+                    ],
+
+                    'from' => $from,
+                    'size' => $size,
                 ];
-            }
             
                 $response = $this->client->search($params);
 
@@ -101,12 +109,12 @@
                     return $response['hits']['hits'];
                 }
 
-                } catch (Exception $e) {
+            } catch (Exception $e) {
                 echo "Error " . $e->getMessage() . "\n";
             }
     	}
 
-        public function insertDocument($index, $id, $document)
+        public function propertyDocumentSave($index, $id, $document)
         {
             $params = [
                 'index' => $index,
@@ -121,7 +129,7 @@
             }
         }
 
-        public function updateDocument($index, $id, $document)
+        public function propertyDocumentUpdate($index, $id, $document)
         {
             $params = [
                 'index' => $index,
@@ -136,7 +144,7 @@
             }
         }
 
-        public function deleteDocument($index, $id)
+        public function propertyDocumentDelete($index, $id)
         {
             $params = [
                 'index' => $index,
