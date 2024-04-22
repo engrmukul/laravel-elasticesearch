@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SearchController;
+use Elastic\Elasticsearch\ClientBuilder;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+
+Route::get('/jac', [SearchController::class, 'index']);
+Route::get('/autocomplete/{query?}', [SearchController::class, 'autocomplete']);
+Route::get('/search/{query?}', [SearchController::class, 'search']);
+Route::post('/filter', [SearchController::class, 'filter']);

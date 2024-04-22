@@ -7,45 +7,113 @@ use App\Services\ElasticsearchService;
 
 class SearchController extends Controller
 {
-    protected $elasticsearch;
+   protected $elasticsearch;
 
     public function __construct(ElasticsearchService $elasticsearch)
     {
         $this->elasticsearch = $elasticsearch;
     }
 
-    public function search(Request $request)
+    public function autocomplete()
     {
-        $query = $request->input('query');
+        //MERGE MRT station, city, 
 
-        $result = $this->elasticsearch->search('rzy_properties', 'your_autocomplete_field', $query);
+        $query = trim(request()->get('query'));
 
-        return response()->json($result);
+        $rzyProperties = $this->elasticsearch->autocomplete('rzy_properties', 'product_name', $query);
+        $rzyCityList = $this->elasticsearch->autocomplete('rzy_city_list', 'city', $query);
+        $rzyMrtList = $this->elasticsearch->autocomplete('rzy_mrt_list', 'BUILDING', $query);
+        
+        //dd($rzyProperties);
+
+        $rzyPropertySugessionArray = [];
+        $rzyCitySugessionArray = [];
+        $rzyMrtSugessionArray = [];
+
+        if(!empty($rzyProperties)){
+            foreach ($rzyProperties as $key => $value) {
+                $propertySugession['name'] = $value['_source']['product_name'];
+                $propertySugession['address'] = $value['_source']['property_address'];
+                $propertySugession['type'] = $value['_source']['subcategory'];
+
+                $rzyPropertySugessionArray[] = $propertySugession;
+            }
+        }
+
+         if(!empty($rzyCityList)){
+            foreach ($rzyCityList as $key => $value) {
+                $citySugession['name'] = $value['_source']['city'];
+                $citySugession['address'] = '';
+                $citySugession['type'] = 'City';
+
+                $rzyCitySugessionArray[] = $citySugession;
+            }
+        }
+
+
+         if(!empty($rzyMrtList)){
+            foreach ($rzyMrtList as $key => $value) {
+                $mrtSugession['name'] = $value['_source']['BUILDING'];
+                $mrtSugession['address'] = $value['_source']['ADDRESS'];
+                $mrtSugession['type'] = 'MRT Station';
+
+                $rzyMrtSugessionArray[] = $mrtSugession;
+            }
+        }
+
+
+        $suggestions = array_merge($rzyPropertySugessionArray, $rzyCitySugessionArray, $rzyMrtSugessionArray);
+
+
+
+        if(!empty($suggestions)){
+            return response()->json($suggestions);
+        }else{
+            return response()->json(['errors' => ['message' => ['Data not found.']]], 400);
+        }
+
+        
+    }
+
+    public function search()
+    {
+        $query = trim(request()->get('query'));
+
+        $result = $this->elasticsearch->search('rzy_properties', $query);
+
+        if(!empty($result)){
+            return response()->json($result);
+        }else{
+            return response()->json(['errors' => ['message' => ['Data not found.']]], 400);
+        }
     }
 
     public function filter(Request $request)
     {
-        //$query = $request->input('query');
-	// data from request
+        $query = $request->input('query');
 
-
-	$filters = [
-        	['range' => ['timestamp' => ['gte' => '2022-01-01', 'lte' => '2022-12-31']]],
-        	['term' => ['status' => 'active']]
-    	];
+        $filters = [
+            "bathroom" => trim($query->bathroom),
+            "bedroom" => trim($query->bedroom),
+            "district" => trim($query->district),
+            "furnishing" => trim($query->district),
+            "hdb" => trim($query->hdb),
+            "price_start" => trim($query->price_start),
+            "price_end" => trim($query->price_end),
+            "sub_category" => trim($query->sub_category),
+            "rental_type" => trim($query->rental_type),
+            "unit_area" => trim($query->unit_area),
+        ];
 
         $result = $this->elasticsearch->filter('rzy_properties',  $filters);
 
-        return response()->json($result);
+        if(!empty($result)){
+            return response()->json($result);
+        }else{
+            return response()->json(['errors' => ['message' => ['Data not found.']]], 400);
+        }
     }
 
 
-    public function autocomplete(Request $request)
-    {
-        $query = $request->input('query');
 
-        $suggestions = $this->elasticsearch->autocomplete('your_index_name', 'your_autocomplete_field', $query);
-
-        return response()->json($suggestions);
-    }
 }
